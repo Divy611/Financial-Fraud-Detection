@@ -140,28 +140,104 @@ def evaluate_model(clf, X_test, y_test):
     return accuracy, precision, recall, f1
 
 
+def load_model():
+    # Load the trained model here
+    model = RandomForestClassifier()
+    return model
+
+# Function to preprocess input data
+
+
+def preprocess_input(input_data):
+    # Preprocess the input data here
+    # For simplicity, we'll just convert the input dictionary to a DataFrame
+    df = pd.DataFrame(input_data, index=[0])
+    return df
+
+# Predict function
+
+
+def predict(model, input_data):
+    # Preprocess input data
+    input_df = preprocess_input(input_data)
+
+    # Load and preprocess data
+    # Replace 'your_database.db' with your SQLite database file path
+    conn = sqlite3.connect('your_database.db')
+    # Adjust the query according to your table name
+    query = "SELECT * FROM json_transactions"
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    # Preprocess data
+    df = preprocess_data(df)
+
+    # Select relevant features for prediction
+    X = df.drop(columns=['event_id'])
+    y = df['event_id']
+
+    # Train the model
+    model.fit(X, y)
+
+    # Predict
+    prediction = model.predict(input_df)
+
+    return prediction
+
+
 def main():
     sidebar()
     st.markdown(css, unsafe_allow_html=True)
     st.title('Financial Fraud Detection System')
-    df = load_data()
-    df = preprocess_data(df)
 
-    clf, X_test, y_test = train_model(df)
+    # Load trained model
+    model = load_model()
 
-    # Evaluate the model
-    st.write("Evaluating the model...")
-    accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
-    st.write("Model evaluation complete!")
+    # User input for transaction details
+    st.write("Enter transaction details:")
+    time_id = st.text_input("Time ID:")
+    user_id = st.text_input("User ID:")
+    trans_amount = st.number_input("Transaction Amount:")
+    # Add more input fields as needed
 
-    # Display evaluation metrics
-    st.write("## Evaluation Metrics")
-    st.write(f"Accuracy: {accuracy:.2f}")
-    st.write(f"Precision: {precision:.2f}")
-    st.write(f"Recall: {recall:.2f}")
-    st.write(f"F1 Score: {f1:.2f}")
+    input_data = {
+        'time_id': time_id,
+        'user_id': user_id,
+        'trans_amount': trans_amount
+        # Add more input fields as needed
+    }
+
+    # Predict
+    if st.button("Predict"):
+        prediction = predict(model, input_data)
+        st.write(f"Predicted Event ID: {prediction}")
 
 
 # Run the app
 if __name__ == '__main__':
     main()
+# def main():
+#     sidebar()
+#     st.markdown(css, unsafe_allow_html=True)
+#     st.title('Financial Fraud Detection System')
+#     df = load_data()
+#     df = preprocess_data(df)
+
+#     clf, X_test, y_test = train_model(df)
+
+#     # Evaluate the model
+#     st.write("Evaluating the model...")
+#     accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
+#     st.write("Model evaluation complete!")
+
+#     # Display evaluation metrics
+#     st.write("## Evaluation Metrics")
+#     st.write(f"Accuracy: {accuracy:.2f}")
+#     st.write(f"Precision: {precision:.2f}")
+#     st.write(f"Recall: {recall:.2f}")
+#     st.write(f"F1 Score: {f1:.2f}")
+
+
+# # Run the app
+# if __name__ == '__main__':
+#     main()
