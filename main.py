@@ -99,22 +99,23 @@ def sidebar():
 
 def preprocess_data(df):
     # Convert transaction_time to datetime
-    df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-    df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
-    return df
+    # df['transaction_time'] = pd.to_datetime(df['transaction_time'])
+    # df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
+    # return df
+    return
 
 
 def train_model(df):
     # Split the data into features and target variable
-    X = df.drop(columns=['event_id'])
-    y = df['event_id']
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+    # X = df.drop(columns=['event_id'])
+    # y = df['event_id']
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #    X, y, test_size=0.2, random_state=42)
 
-    clf = RandomForestClassifier(n_estimators=100, random_state=42)
-    clf.fit(X_train, y_train)
-
-    return clf, X_test, y_test
+    # clf = RandomForestClassifier(n_estimators=100, random_state=42)
+    # clf.fit(X_train, y_train)
+    # return clf , X_test, y_test
+    return
 
 
 def evaluate_model(clf, X_test, y_test):
@@ -146,12 +147,12 @@ def predict(model, input_data):
     conn.close()
 
     df = preprocess_data(df)
-    X = df.drop(columns=['event_id'])
-    y = df['event_id']
-    model.fit(X, y)
-    prediction = model.predict(input_df)
-
-    return prediction
+    # X = df.drop(columns=['event_id'])
+    # y = df['event_id']
+    # model.fit(X, y)
+    # prediction = model.predict(input_df)
+    # return prediction
+    return
 
 
 def team_page():
@@ -190,31 +191,22 @@ def main():
     user_name = st.text_input("User:")
     transaction_amount = st.number_input("Transaction Amount:")
 
-    input_data = {
-        'transaction_time': transaction_time,
-        'user_name': user_name,
-        'transaction_amount': transaction_amount,
-    }
+    # input_data = {
+    #    'transaction_time': transaction_time,
+    #    'user_name': user_name,
+    #    'transaction_amount': transaction_amount,
+    # }
 
-    clf, X_test, y_test = train_model(df)
+    # clf, X_test, y_test = train_model(df)
     if st.button("Predict"):
         st.write("Evaluating the model...")
-        st.write(f"Predicted Event ID:")
-        accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
+        # accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
         st.write("Model evaluation complete!")
-        prediction = predict(model, input_data)
-        st.write(f"Predicted Event ID: {prediction}")
+        # prediction = predict(model, input_data)
+        # st.write(f"Predicted Event ID: {prediction}")
+        st.write(f"Predicted Transaction Nature:")
 
 
 # Run the app
 if __name__ == '__main__':
     main()
-# def main():
-#     clf, X_test, y_test = train_model(df)
-
-#     # Display evaluation metrics
-#     st.write("## Evaluation Metrics")
-#     st.write(f"Accuracy: {accuracy:.2f}")
-#     st.write(f"Precision: {precision:.2f}")
-#     st.write(f"Recall: {recall:.2f}")
-#     st.write(f"F1 Score: {f1:.2f}")
