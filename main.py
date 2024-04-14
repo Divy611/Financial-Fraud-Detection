@@ -80,42 +80,25 @@ def load_data():
     df = pd.read_sql(query, conn)
     conn.close()
     return df
-    return
-
-
-def sidebar():
-    with st.sidebar:
-        st.info('**Financial Fraud Detection System**')
-        team_button = st.button("Our Team")
-        database_button = st.button('View Database')
-        st.session_state.log_holder = st.empty()
-        if team_button:
-            st.session_state.app_mode = 'team'
-            # st.session_state['page'] = 'team'
-        if database_button:
-            st.session_state.app_mode = 'database'
-            # st.session_state['page'] = 'database'
 
 
 def preprocess_data(df):
     # Convert transaction_time to datetime
-    # df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-    # df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
-    # return df
-    return
+    df['transaction_time'] = pd.to_datetime(df['transaction_time'])
+    df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
+    return df
 
 
 def train_model(df):
     # Split the data into features and target variable
-    # X = df.drop(columns=['event_id'])
-    # y = df['event_id']
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #    X, y, test_size=0.2, random_state=42)
+    X = df.drop(columns=['transaction_action'])  # Adjust column name
+    y = df['transaction_action']  # Adjust column name
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
 
-    # clf = RandomForestClassifier(n_estimators=100, random_state=42)
-    # clf.fit(X_train, y_train)
-    # return clf , X_test, y_test
-    return
+    clf = RandomForestClassifier(n_estimators=100, random_state=42)
+    clf.fit(X_train, y_train)
+    return clf, X_test, y_test
 
 
 def evaluate_model(clf, X_test, y_test):
@@ -147,12 +130,11 @@ def predict(model, input_data):
     conn.close()
 
     df = preprocess_data(df)
-    # X = df.drop(columns=['event_id'])
-    # y = df['event_id']
-    # model.fit(X, y)
-    # prediction = model.predict(input_df)
-    # return prediction
-    return
+    X = df.drop(columns=['transaction_action'])  # Adjust column name
+    y = df['transaction_action']  # Adjust column name
+    model.fit(X, y)
+    prediction = model.predict(input_df)
+    return prediction
 
 
 def team_page():
@@ -174,7 +156,17 @@ def database_page():
 def main():
     if 'app_mode' not in st.session_state:
         st.session_state['app_mode'] = 'main'
-    sidebar()
+    with st.sidebar:
+        st.info('**Financial Fraud Detection System**')
+        team_button = st.button("Our Team")
+        database_button = st.button('View Database')
+        st.session_state.log_holder = st.empty()
+        if team_button:
+            st.session_state.app_mode = 'team'
+            # st.session_state['page'] = 'team'
+        if database_button:
+            st.session_state.app_mode = 'database'
+            # st.session_state['page'] = 'database'
     df = load_data()
     df = preprocess_data(df)
     st.markdown(css, unsafe_allow_html=True)
@@ -191,20 +183,19 @@ def main():
     user_name = st.text_input("User:")
     transaction_amount = st.number_input("Transaction Amount:")
 
-    # input_data = {
-    #    'transaction_time': transaction_time,
-    #    'user_name': user_name,
-    #    'transaction_amount': transaction_amount,
-    # }
+    input_data = {
+        'transaction_time': transaction_time,
+        'user_name': user_name,
+        'transaction_amount': transaction_amount,
+    }
 
-    # clf, X_test, y_test = train_model(df)
+    clf, X_test, y_test = train_model(df)
     if st.button("Predict"):
         st.write("Evaluating the model...")
-        # accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
+        accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
         st.write("Model evaluation complete!")
-        # prediction = predict(model, input_data)
-        # st.write(f"Predicted Event ID: {prediction}")
-        st.write(f"Predicted Transaction Nature:")
+        prediction = predict(model, input_data)
+        st.write(f"Predicted Transaction Action: {prediction}")
 
 
 # Run the app
