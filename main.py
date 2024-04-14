@@ -76,10 +76,10 @@ body {
 
 def load_data():
     conn = sqlite3.connect('fraud_data.db')
-    # query = "SELECT * FROM json_transactions"
-    # df = pd.read_sql(query, conn)
-    # conn.close()
-    # return df
+    query = "SELECT * FROM transaction_data"
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
     return
 
 
@@ -98,10 +98,9 @@ def sidebar():
 
 
 def preprocess_data(df):
-    # Convert time_id to datetime
-    df['time_id'] = pd.to_datetime(df['time_id'])
-    df['trans_amount'] = pd.to_numeric(df['trans_amount'])
-
+    # Convert transaction_time to datetime
+    df['transaction_time'] = pd.to_datetime(df['transaction_time'])
+    df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
     return df
 
 
@@ -142,7 +141,7 @@ def preprocess_input(input_data):
 def predict(model, input_data):
     input_df = preprocess_input(input_data)
     conn = sqlite3.connect('fraud_data.db')
-    query = "SELECT * FROM json_transactions"
+    query = "SELECT * FROM transaction_data"
     df = pd.read_sql(query, conn)
     conn.close()
 
@@ -175,8 +174,8 @@ def main():
     if 'app_mode' not in st.session_state:
         st.session_state['app_mode'] = 'main'
     sidebar()
-    # df = load_data()
-    # df = preprocess_data(df)
+    df = load_data()
+    df = preprocess_data(df)
     st.markdown(css, unsafe_allow_html=True)
     st.title('Financial Fraud Detection System')
     if st.session_state.app_mode == 'team':
@@ -187,24 +186,24 @@ def main():
 
     # User input for transaction details
     st.write("Enter the transaction details:")
-    time_id = st.text_input("Time ID:")
-    user_id = st.text_input("User ID:")
-    trans_amount = st.number_input("Transaction Amount:")
+    transaction_time = st.text_input("Time:")
+    user_name = st.text_input("User:")
+    transaction_amount = st.number_input("Transaction Amount:")
 
     input_data = {
-        'time_id': time_id,
-        'user_id': user_id,
-        'trans_amount': trans_amount,
+        'transaction_time': transaction_time,
+        'user_name': user_name,
+        'transaction_amount': transaction_amount,
     }
 
-    # clf, X_test, y_test = train_model(df)
+    clf, X_test, y_test = train_model(df)
     if st.button("Predict"):
         st.write("Evaluating the model...")
         st.write(f"Predicted Event ID:")
-        # accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
-        # st.write("Model evaluation complete!")
-        # prediction = predict(model, input_data)
-        # st.write(f"Predicted Event ID: {prediction}")
+        accuracy, precision, recall, f1 = evaluate_model(clf, X_test, y_test)
+        st.write("Model evaluation complete!")
+        prediction = predict(model, input_data)
+        st.write(f"Predicted Event ID: {prediction}")
 
 
 # Run the app
