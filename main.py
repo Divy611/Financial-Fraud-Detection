@@ -89,22 +89,21 @@ def preprocess_data(df):
     print(df.head())
     print("Data types before preprocessing:")
     print(df.dtypes)
+
+    # Convert 'transaction_time' to datetime
     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
 
+    # Perform one-hot encoding for 'user_name' if the column exists
     if 'user_name' in df.columns:
         df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
-    numeric_cols = df.select_dtypes(include=['number']).columns
-    imputer = SimpleImputer(strategy='mean')
-    df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
-    df['social_security_number'] = df['social_security_number'].astype(
-        str).fillna('Unknown')
 
-    encoder = OneHotEncoder(sparse=False)
-    encoded_ss_numbers = encoder.fit_transform(df[['social_security_number']])
-    encoded_ss_df = pd.DataFrame(encoded_ss_numbers, columns=[
-                                 f'social_security_number_{i}' for i in range(encoded_ss_numbers.shape[1])])
-    df = pd.concat(
-        [df.drop(columns=['social_security_number']), encoded_ss_df], axis=1)
+    # Drop non-numeric columns before imputation
+    non_numeric_cols = df.select_dtypes(exclude=['number']).columns
+    df.drop(columns=non_numeric_cols, inplace=True)
+
+    # Impute missing values with mean
+    imputer = SimpleImputer(strategy='mean')
+    df = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
 
     print("DataFrame after preprocessing:")
     print(df.head())
@@ -112,6 +111,36 @@ def preprocess_data(df):
     print(df.dtypes)
 
     return df
+
+
+# def preprocess_data(df):
+#     print("Original DataFrame:")
+#     print(df.head())
+#     print("Data types before preprocessing:")
+#     print(df.dtypes)
+#     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
+
+#     if 'user_name' in df.columns:
+#         df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
+#     numeric_cols = df.select_dtypes(include=['number']).columns
+#     imputer = SimpleImputer(strategy='mean')
+#     df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
+#     df['social_security_number'] = df['social_security_number'].astype(
+#         str).fillna('Unknown')
+
+#     encoder = OneHotEncoder(sparse=False)
+#     encoded_ss_numbers = encoder.fit_transform(df[['social_security_number']])
+#     encoded_ss_df = pd.DataFrame(encoded_ss_numbers, columns=[
+#                                  f'social_security_number_{i}' for i in range(encoded_ss_numbers.shape[1])])
+#     df = pd.concat(
+#         [df.drop(columns=['social_security_number']), encoded_ss_df], axis=1)
+
+#     print("DataFrame after preprocessing:")
+#     print(df.head())
+#     print("Data types after preprocessing:")
+#     print(df.dtypes)
+
+#     return df
 
 
 def train_model(df):
