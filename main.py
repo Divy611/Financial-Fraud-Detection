@@ -77,34 +77,9 @@ query = "SELECT * FROM transaction_data"
 df = pd.read_sql(query, conn)
 conn.close()
 
-label_encoders = {}
-clf = RandomForestClassifier(n_estimators=100, random_state=46)
-X = df.drop(['social_security_number', 'transaction_time',
-             'transaction_nature'], axis=1)
-
-
-# def train():
-#     for column in ['transaction_action', 'user_name', 'recipient_name']:
-#         label_encoders[column] = LabelEncoder()
-#         df[column] = label_encoders[column].fit_transform(df[column])
-
-#     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-#     df['transaction_day'] = df['transaction_time'].dt.day
-#     df['transaction_month'] = df['transaction_time'].dt.month
-#     df['transaction_week'] = df['transaction_time'].dt.week
-
-#     # Normalize numerical features
-#     df['transaction_amount'] = (df['transaction_amount'] -
-#                                 df['transaction_amount'].mean()) / df['transaction_amount'].std()
-
-#     # Random Forest
-#     X = df.drop(['social_security_number', 'transaction_time',
-#                 'transaction_nature'], axis=1)
-#     y = df['social_security_number']
-#     clf.fit(X, y)
-
 
 def predict_fraudulence(date, user_name, recipient_name, transaction_action, transaction_amount):
+    label_encoders = {}
     for column in ['transaction_action', 'user_name', 'recipient_name']:
         label_encoders[column] = LabelEncoder()
         df[column] = label_encoders[column].fit_transform(df[column])
@@ -124,7 +99,6 @@ def predict_fraudulence(date, user_name, recipient_name, transaction_action, tra
     y = df['social_security_number']
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
     clf.fit(X, y)
-    date = pd.Timestamp(date)
     input_data = pd.DataFrame({
         'user_name': [user_name],
         'transaction_amount': [transaction_amount],
@@ -144,27 +118,6 @@ def predict_fraudulence(date, user_name, recipient_name, transaction_action, tra
         return "Fraudulent Transaction"
     else:
         return "Legitimate Transaction"
-
-
-# def predict_fraudulence(date, user_name, recipient_name, transaction_action, transaction_amount):
-#    input_data = pd.DataFrame({
-#        'user_name': [user_name],
-#        'transaction_amount': [transaction_amount],
-#        'recipient_name': [recipient_name],
-#        'transaction_action': [transaction_action],
-#        'transaction_day': [date.day],
-#        'transaction_month': [date.month],
-#        'transaction_dayofweek': [date.dayofweek]
-#    })
-#    input_data = input_data[X.columns]
-#    for column in ['transaction_action', 'user_name', 'recipient_name']:
-#        input_data[column] = label_encoders[column].transform(
-#            input_data[column])
-#    prediction = clf.predict(input_data)
-#    if prediction[0] == 1:
-#        return "Fraudulent Transaction"
-#    else:
-#        return "Legitimate Transaction"
 
 
 def team_page():
@@ -223,19 +176,12 @@ def main():
     recipient_name = st.text_input("Recipient:")
     transaction_action = st.text_input("Transaction Action:")
     transaction_amount = st.number_input("Transaction Amount:")
-    input_data = {
-        'user_name': user_name,
-        'recipient_name': recipient_name,
-        'transaction_date': transaction_date,
-        'transaction_action': transaction_action,
-        'transaction_amount': transaction_amount,
-    }
-    result = predict_fraudulence(
-        transaction_date, user_name, recipient_name, transaction_action, transaction_amount)
     if st.button("Predict"):
         st.write("Evaluating the model...")
         st.write("Model evaluation complete!")
-        st.write("Predicted Transaction Action: {result}")
+        result = predict_fraudulence(
+            transaction_date, user_name, recipient_name, transaction_action, transaction_amount)
+        st.write(f"Predicted Transaction Action: {result}")
 
 
 if __name__ == '__main__':
