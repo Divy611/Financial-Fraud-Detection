@@ -1,6 +1,8 @@
 import sqlite3
 import pandas as pd
 import streamlit as st
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -83,19 +85,55 @@ def load_data():
 
 
 def preprocess_data(df):
+    print("Original DataFrame:")
+    print(df.head())
+    print("Data types before preprocessing:")
+    print(df.dtypes)
+
     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-    df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
+    df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
+    print("DataFrame after one-hot encoding user_name:")
+    print(df.head())
+    print("Data types after one-hot encoding user_name:")
+    print(df.dtypes)
+
+    df['social_security_number'] = df['social_security_number'].fillna(
+        'Unknown')
+    print("DataFrame after filling NaNs in social_security_number:")
+    print(df.head())
+
+    # encoder = OneHotEncoder(sparse=False)
+    # encoded_ss_numbers = encoder.fit_transform(df[['social_security_number']])
+    # print("Encoded social_security_number data:")
+    # print(encoded_ss_numbers)
+
+    # df = pd.concat([df.drop(columns=['social_security_number']),
+    #                 pd.DataFrame(encoded_ss_numbers)], axis=1)
+    # print("Final DataFrame after preprocessing:")
+    # print(df.head())
+
     return df
 
 
 def train_model(df):
-    X = df.drop(columns=['transaction_action'])
-    y = df['transaction_action']
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+    target_variable = 'transaction_action'
+    if target_variable not in df.columns:
+        raise ValueError(
+            f"Column '{target_variable}' does not exist in DataFrame. Please check your DataFrame columns.")
+    df = preprocess_data(df)
 
+    X = df.drop(columns=[target_variable, 'transaction_time'])
+    y = df[target_variable]
+    X.columns = X.columns.astype(str)
+
+    # Handle missing values
+    imputer = SimpleImputer(strategy='mean')
+    X_imputed = imputer.fit_transform(X)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_imputed, y, test_size=0.2, random_state=42)
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
     clf.fit(X_train, y_train)
+
     return clf, X_test, y_test
 
 
@@ -127,8 +165,8 @@ def predict(model, input_data):
     conn.close()
 
     df = preprocess_data(df)
-    X = df.drop(columns=['transaction_action'])  # Adjust column name
-    y = df['transaction_action']  # Adjust column name
+    X = df.drop(columns=['transaction_action'])
+    y = df['transaction_action']
     model.fit(X, y)
     prediction = model.predict(input_df)
     return prediction
@@ -136,7 +174,10 @@ def predict(model, input_data):
 
 def team_page():
     st.title('Our Team')
-    st.write("Details about our team.")
+    st.header("Aditya Pandey (AI-A) (Registration Number: 225890264)")
+    st.write("")
+    st.header("Suraj Prasanna (AI-B) (Registration Number: 225890296)")
+    st.write("")
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -144,7 +185,11 @@ def team_page():
 
 def database_page():
     st.title('View Database')
-    st.write("Database contents here.")
+    conn = sqlite3.connect('fraud_data.db')
+    query = "SELECT * FROM transaction_data"
+    df = pd.read_sql(query, conn)
+    st.write(df)
+    conn.close()
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
