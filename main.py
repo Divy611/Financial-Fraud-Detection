@@ -1,7 +1,6 @@
 import sqlite3
 import pandas as pd
 import streamlit as st
-from fraud_detection import *
 
 st.set_page_config(page_title='Financial Fraud Detection System', layout='wide',
                    initial_sidebar_state='auto')
@@ -71,6 +70,14 @@ body {
 """
 
 
+def load_data():
+    conn = sqlite3.connect('fraud_data.db')
+    query = "SELECT * FROM transaction_data"
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
+
+
 def team_page():
     st.title('Our Team')
     st.header("Aditya Pandey (AI-A) (Registration Number: 225890264)")
@@ -111,10 +118,8 @@ def main():
         st.session_state.log_holder = st.empty()
         if team_button:
             st.session_state.app_mode = 'team'
-            # st.session_state['page'] = 'team'
         if database_button:
             st.session_state.app_mode = 'database'
-            # st.session_state['page'] = 'database'
     st.title('Financial Fraud Detection System')
     if st.session_state.app_mode == 'team':
         team_page()
@@ -127,27 +132,17 @@ def main():
     user_name = st.text_input("User:")
     recipient_name = st.text_input("Recipient:")
     transaction_amount = st.number_input("Transaction Amount:")
-
-    # clf, X_test, y_test = train_model(df)
     if st.button("Predict"):
         st.write("Evaluating the model...")
-        # accuracy, precision, recall, f1 = evaluate_model(
-        #     clf, X_test, y_test)
         st.write("Model evaluation complete!")
-        # prediction = predict(model, input_data)
-        # st.write(f"Predicted Transaction Action: {prediction}")
         st.write("Predicted Transaction Action:")
-
     input_data = {
         'transaction_time': transaction_time,
         'user_name': user_name,
         'recipient_name': recipient_name,
         'transaction_amount': transaction_amount,
     }
-    # df = load_data()
-    # df = preprocess_data(df)
 
 
-# Run the app
 if __name__ == '__main__':
     main()

@@ -61,7 +61,7 @@ date = pd.to_datetime(input("Enter transaction date (YYYY-MM-DD): "))
 user_name = input("Enter user name: ")
 recipient_name = input("Enter recipient name: ")
 transaction_action = input(
-    "Enter transaction action (e.g., Deposit, Transfer): ")
+    "Enter transaction action: ")
 transaction_amount = float(input("Enter transaction amount: "))
 
 result = predict_fraudulence(
