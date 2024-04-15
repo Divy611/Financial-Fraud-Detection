@@ -83,16 +83,14 @@ def load_data():
 
 
 def preprocess_data(df):
-    # Convert transaction_time to datetime
     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
     df['transaction_amount'] = pd.to_numeric(df['transaction_amount'])
     return df
 
 
 def train_model(df):
-    # Split the data into features and target variable
-    X = df.drop(columns=['transaction_action'])  # Adjust column name
-    y = df['transaction_action']  # Adjust column name
+    X = df.drop(columns=['transaction_action'])
+    y = df['transaction_action']
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42)
 
@@ -112,7 +110,6 @@ def evaluate_model(clf, X_test, y_test):
 
 
 def load_model():
-    # Load the trained model here
     model = RandomForestClassifier()
     return model
 
