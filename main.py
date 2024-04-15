@@ -90,20 +90,15 @@ def preprocess_data(df):
     print("Data types before preprocessing:")
     print(df.dtypes)
 
-    # Convert 'transaction_time' to datetime
     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-
-    # Perform one-hot encoding for 'user_name' if the column exists
     if 'user_name' in df.columns:
         df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
-
-    # Drop non-numeric columns before imputation
-    non_numeric_cols = df.select_dtypes(exclude=['number']).columns
-    df.drop(columns=non_numeric_cols, inplace=True)
-
-    # Impute missing values with mean
+    if 'social_security_number' in df.columns:
+        # Drop social_security_number column
+        df = df.drop(columns=['social_security_number'])
+    numeric_cols = df.select_dtypes(include=['number']).columns
     imputer = SimpleImputer(strategy='mean')
-    df = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
+    df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
 
     print("DataFrame after preprocessing:")
     print(df.head())
