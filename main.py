@@ -89,28 +89,27 @@ def preprocess_data(df):
     print(df.head())
     print("Data types before preprocessing:")
     print(df.dtypes)
-
     df['transaction_time'] = pd.to_datetime(df['transaction_time'])
-    df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
-    print("DataFrame after one-hot encoding user_name:")
+
+    if 'user_name' in df.columns:
+        df = pd.get_dummies(df, columns=['user_name'], drop_first=True)
+    numeric_cols = df.select_dtypes(include=['number']).columns
+    imputer = SimpleImputer(strategy='mean')
+    df[numeric_cols] = imputer.fit_transform(df[numeric_cols])
+    df['social_security_number'] = df['social_security_number'].astype(
+        str).fillna('Unknown')
+
+    encoder = OneHotEncoder(sparse=False)
+    encoded_ss_numbers = encoder.fit_transform(df[['social_security_number']])
+    encoded_ss_df = pd.DataFrame(encoded_ss_numbers, columns=[
+                                 f'social_security_number_{i}' for i in range(encoded_ss_numbers.shape[1])])
+    df = pd.concat(
+        [df.drop(columns=['social_security_number']), encoded_ss_df], axis=1)
+
+    print("DataFrame after preprocessing:")
     print(df.head())
-    print("Data types after one-hot encoding user_name:")
+    print("Data types after preprocessing:")
     print(df.dtypes)
-
-    df['social_security_number'] = df['social_security_number'].fillna(
-        'Unknown')
-    print("DataFrame after filling NaNs in social_security_number:")
-    print(df.head())
-
-    # encoder = OneHotEncoder(sparse=False)
-    # encoded_ss_numbers = encoder.fit_transform(df[['social_security_number']])
-    # print("Encoded social_security_number data:")
-    # print(encoded_ss_numbers)
-
-    # df = pd.concat([df.drop(columns=['social_security_number']),
-    #                 pd.DataFrame(encoded_ss_numbers)], axis=1)
-    # print("Final DataFrame after preprocessing:")
-    # print(df.head())
 
     return df
 
@@ -219,15 +218,16 @@ def main():
         database_page()
     model = load_model()
 
-    # User input for transaction details
     st.write("Enter the transaction details:")
     transaction_time = st.text_input("Time:")
     user_name = st.text_input("User:")
+    recipient_name = st.text_input("Recipient:")
     transaction_amount = st.number_input("Transaction Amount:")
 
     input_data = {
         'transaction_time': transaction_time,
         'user_name': user_name,
+        'recipient_name': recipient_name,
         'transaction_amount': transaction_amount,
     }
 
