@@ -83,9 +83,15 @@ def team_page():
 
 
 def database_page():
-    st.title('View Database')
+    st.title('Database Used')
+    st.header("Transaction Data")
     conn = sqlite3.connect('fraud_data.db')
     query = "SELECT * FROM transaction_data"
+    df = pd.read_sql(query, conn)
+    st.write(df)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.header("User Account Data")
+    query = "SELECT * FROM accounts_data"
     df = pd.read_sql(query, conn)
     st.write(df)
     conn.close()
