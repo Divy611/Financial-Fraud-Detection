@@ -78,7 +78,7 @@ df = pd.read_sql(query, conn)
 conn.close()
 
 
-def predict_fraudulence(date, user_name, recipient_name, transaction_action, transaction_amount):
+def predict_fraudulence(date, user_name, recipient_name, transaction_amount):
     label_encoders = {}
     for column in ['transaction_action', 'user_name', 'recipient_name']:
         label_encoders[column] = LabelEncoder()
@@ -103,7 +103,7 @@ def predict_fraudulence(date, user_name, recipient_name, transaction_action, tra
         'user_name': [user_name],
         'transaction_amount': [transaction_amount],
         'recipient_name': [recipient_name],
-        'transaction_action': [transaction_action],
+        'transaction_action': ["Transfer"],
         'transaction_day': [date.day],
         'transaction_month': [date.month],
         'transaction_dayofweek': [date.dayofweek]
@@ -170,18 +170,17 @@ def main():
     # model = load_model()
 
     st.write("Enter the transaction details:")
-    # transaction_date = st.text_input("Date of Transaction(YYYY-MM-DD):")
-    transaction_date = st.date_input("Date of Transaction(YYYY-MM-DD):")
+    transaction_date = st.text_input("Date of Transaction(YYYY-MM-DD):")
+    # transaction_date = st.date_input("Date of Transaction:")
     user_name = st.text_input("User:")
     recipient_name = st.text_input("Recipient:")
-    transaction_action = st.text_input("Transaction Action:")
     transaction_amount = st.number_input("Transaction Amount:")
     if st.button("Predict"):
         st.write("Evaluating the model...")
         st.write("Model evaluation complete!")
         result = predict_fraudulence(
-            transaction_date, user_name, recipient_name, transaction_action, transaction_amount)
-        st.write(f"Predicted Transaction Action: {result}")
+            transaction_date, user_name, recipient_name, transaction_amount)
+        st.write(f"This Transaction is a {result}!")
 
 
 if __name__ == '__main__':
